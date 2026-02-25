@@ -63,6 +63,10 @@
             "Quartz": {
               "target": "Package",
               "version": "[3.15.1, )"
+            },
+            "Quartz.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[3.15.1, )"
             }
           },
           "imports": [

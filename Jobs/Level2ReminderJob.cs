@@ -117,7 +117,17 @@ public class Level2ReminderJob : IJob
                 var onProgressCount = moms.Count(x => x.Status == "ON PROGRESS");
                 var openCount = moms.Count(x => x.Status == "OPEN");
 
-                var subject = $"Reminder MoM Level 2 - Dept {dept} ({moms.Count} Outstanding)";
+                // Severity Icon Subject
+                string severityIcon;
+
+                if (overdueCount > 0)
+                    severityIcon = "🔴";
+                else if (openCount > 0)
+                    severityIcon = "🟡";
+                else
+                    severityIcon = "🟢";
+
+                var subject = $"{severityIcon} Pengingat MoM Level 2 - Dept {dept} ({totalOutstanding} Outstanding, {overdueCount} Terlambat)";
                 var body = Level2EmailTemplate.Generate(dept, moms, totalOutstanding, overdueCount, openCount, onProgressCount);
 
                 // Untuk melihat dikirim ke siapa dan cc nya siapa

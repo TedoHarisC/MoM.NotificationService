@@ -44,15 +44,15 @@ public static class Level2EmailTemplate
                                 <td>
 
                                     <h2 style='color:#2c3e50;margin-bottom:10px;'>
-                                        MoM Level 2 Reminder
+                                        Reminder MoM Level 2
                                     </h2>
 
                                     <p style='margin:0 0 10px 0;'>
-                                        Dear Dept Head, Sect Head & Team <b>{dept}</b>,
+                                        Kepada Yth. Dept Head, Sect Head & Tim <b>{dept}</b>,
                                     </p>
 
                                     <p style='margin:0 0 15px 0;'>
-                                        Below are outstanding MoM Level 2 items that require attention before the upcoming departmental meeting.
+                                        Berikut adalah item MoM Level 2 yang belum selesai dan memerlukan perhatian sebelum meeting departemen berikutnya.
                                     </p>
 
                                     <table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:20px;'>
@@ -64,25 +64,25 @@ public static class Level2EmailTemplate
                                                             <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
                                                                 {totalOutstanding}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>Total Outstanding</div>
+                                                            <div style='font-size:12px;color:#666;'>Total Belum Selesai</div>
                                                         </td>
                                                         <td align='center' style='padding:10px;'>
                                                             <div style='font-size:20px;font-weight:bold;color:#d9534f;'>
                                                                 {overdueCount}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>Overdue</div>
+                                                            <div style='font-size:12px;color:#666;'>Terlambat</div>
                                                         </td>
                                                         <td align='center' style='padding:10px;'>
                                                             <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
                                                                 {openCount}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>OPEN</div>
+                                                            <div style='font-size:12px;color:#666;'>TERBUKA</div>
                                                         </td>
                                                         <td align='center' style='padding:10px;'>
                                                             <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
                                                                 {onProgressCount}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>ON PROGRESS</div>
+                                                            <div style='font-size:12px;color:#666;'>SEDANG DIKERJAKAN</div>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -94,10 +94,10 @@ public static class Level2EmailTemplate
                                            style='border-collapse:collapse;margin-top:15px;font-size:14px;'>
 
                                         <tr style='background-color:#2c3e50;color:#ffffff;'>
-                                            <th style='padding:10px;border:1px solid #ddd;'>Topic</th>
-                                            <th style='padding:10px;border:1px solid #ddd;'>Due Date</th>
+                                            <th style='padding:10px;border:1px solid #ddd;'>Topik</th>
+                                            <th style='padding:10px;border:1px solid #ddd;'>Tanggal Jatuh Tempo</th>
                                             <th style='padding:10px;border:1px solid #ddd;'>Status</th>
-                                            <th style='padding:10px;border:1px solid #ddd;'>PIC</th>
+                                            <th style='padding:10px;border:1px solid #ddd;'>Penanggung Jawab</th>
                                         </tr>
 
                                         {rows}
@@ -105,19 +105,19 @@ public static class Level2EmailTemplate
                                     </table>
 
                                     <p style='margin-top:20px;'>
-                                        <strong>Note:</strong> Items highlighted in light red are overdue.
+                                        <strong>Catatan:</strong> Item yang ditandai dengan warna merah muda sudah melewati batas waktu.
                                     </p>
 
                                     <p style='margin-top:10px;'>
-                                        Kindly ensure progress updates are completed prior to the meeting.
+                                        Mohon dipastikan pembaruan progres diselesaikan sebelum meeting.
                                     </p>
 
                                     <hr style='margin-top:30px;border:none;border-top:1px solid #eee;' />
 
                                     <p style='font-size:12px;color:#888;margin-top:10px;'>
-                                        This is an automated notification from the MoM System.
+                                        Ini adalah notifikasi otomatis dari Sistem MoM (My Secretary).
                                         <br/>
-                                        Please do not reply to this email.
+                                        Mohon tidak membalas email ini.
                                     </p>
 
                                 </td>

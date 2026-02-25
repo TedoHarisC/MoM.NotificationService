@@ -61,21 +61,8 @@ public class Level2ReminderJob : IJob
                     continue;
                 }
 
-                // 4️⃣ Ambil Dept Head + Sect Head
-                var headRecipients = await _momService.GetLevel1RecipientsAsync(dept);
-
                 // 5️⃣ Ambil PIC emails & names
                 var picRecipients = new List<string>();
-
-                // VERSI LAMA (N + 1)
-                // foreach (var mom in moms)
-                // {
-                //     var picEmails = await _momService.GetPICEmailsAsync(mom.MoMId);
-                //     picRecipients.AddRange(picEmails);
-
-                //     var picNames = await _momService.GetPICNamesAsync(mom.MoMId);
-                //     mom.PICs = picNames;
-                // }
 
                 // Ambil semua momIds dalam dept
                 var momIds = moms.Select(x => x.MoMId).ToList();
@@ -96,24 +83,47 @@ public class Level2ReminderJob : IJob
                 }
 
                 // 6️⃣ Gabungkan recipients
-                var recipients = headRecipients
-                    .Concat(picRecipients)
+                // Ambil TO (Dept Head)
+                var deptHeadEmails = await _momService.GetDeptHeadEmailsAsync(dept);
+
+                // Ambil CC (Sect Head)
+                var sectHeadEmails = await _momService.GetSectHeadEmailsAsync(dept);
+
+                // PIC recipients (sudah dari optimasi sebelumnya)
+                var picCcEmails = picRecipients;
+
+                // Final TO & CC
+                var toRecipients = deptHeadEmails;
+
+                var ccRecipients = sectHeadEmails
+                    .Concat(picCcEmails)
                     .Distinct()
+                    .Except(toRecipients) // hindari duplicate kalau dept head juga PIC
                     .ToList();
 
-                if (!recipients.Any())
+                if (!toRecipients.Any())
                 {
-                    _logger.LogWarning("No recipients found for {dept}", dept);
+                    _logger.LogWarning("No Dept Head found for {dept}", dept);
                     continue;
                 }
 
                 var subject = $"Reminder MoM Level 2 - Dept {dept} ({moms.Count} Outstanding)";
                 var body = Level2EmailTemplate.Generate(dept, moms);
 
-                _logger.LogInformation("Sending Level 2 email to {count} recipients for {dept}",
-                    recipients.Count, dept);
+                // Untuk melihat dikirim ke siapa dan cc nya siapa
+                _logger.LogInformation("TO: {to}", string.Join(", ", toRecipients));
+                _logger.LogInformation("CC: {cc}", string.Join(", ", ccRecipients));
 
-                await _emailService.SendAsync(recipients, subject, body);
+                // Untuk melihat total dikirim berapa 
+                var totalRecipients = toRecipients.Count + ccRecipients.Count;
+                _logger.LogInformation(
+                    "Sending Level 2 email to {total} recipients (TO: {toCount}, CC: {ccCount}) for {dept}",
+                    totalRecipients,
+                    toRecipients.Count,
+                    ccRecipients.Count,
+                    dept);
+
+                await _emailService.SendAsync(toRecipients, ccRecipients, subject, body);
 
                 await _logRepo.InsertAsync("LEVEL2", dept, DateTime.Today, moms.Count);
 

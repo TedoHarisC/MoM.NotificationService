@@ -23,29 +23,35 @@ public class EmailService
         _testEmail = config["NotificationSettings:TestEmail"];
     }
 
-    public async Task SendAsync(List<string> recipients, string subject, string htmlBody)
+    public async Task SendAsync(List<string> toRecipients, List<string> ccRecipients, string subject, string htmlBody)
     {
         if (_isTestMode)
         {
             Console.WriteLine("🚨 TEST MODE ACTIVE");
-            Console.WriteLine($"Original recipients count: {recipients.Count}");
+            Console.WriteLine($"Original recipients count: {toRecipients.Count}");
 
-            recipients = new List<string> { _testEmail! };
+            toRecipients = new List<string> { _testEmail! };
+            ccRecipients = new List<string>();
             subject = "[TEST MODE] " + subject;
 
             Console.WriteLine($"Final recipients: {_testEmail}");
         }
 
-        if (recipients == null || !recipients.Any())
+        if (toRecipients == null || !toRecipients.Any())
             throw new ArgumentException("Recipient list cannot be empty.");
 
         var message = new MimeMessage();
 
         message.From.Add(new MailboxAddress("MoM System", _senderEmail));
 
-        foreach (var email in recipients.Distinct())
+        foreach (var email in toRecipients.Distinct())
         {
             message.To.Add(MailboxAddress.Parse(email));
+        }
+
+        foreach (var email in ccRecipients.Distinct())
+        {
+            message.Cc.Add(MailboxAddress.Parse(email));
         }
 
         message.Subject = subject;

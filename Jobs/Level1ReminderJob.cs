@@ -62,20 +62,35 @@ public class Level1ReminderJob : IJob
                     continue;
                 }
 
-                var recipients = await _momService.GetLevel1RecipientsAsync(dept);
+                // Ambil Dept Head (TO)
+                var deptHeadEmails = await _momService.GetDeptHeadEmailsAsync(dept);
 
-                if (!recipients.Any())
+                // Ambil Sect Head (CC)
+                var sectHeadEmails = await _momService.GetSectHeadEmailsAsync(dept);
+
+                if (!deptHeadEmails.Any())
                 {
-                    _logger.LogWarning("No recipients found for {dept}", dept);
+                    _logger.LogWarning("No Dept Head found for {dept}", dept);
                     continue;
                 }
+
+                var toRecipients = deptHeadEmails;
+
+                var ccRecipients = sectHeadEmails
+                    .Distinct()
+                    .Except(toRecipients)
+                    .ToList();
 
                 var subject = $"Reminder MoM Level 1 - Dept {dept} ({moms.Count} Outstanding)";
                 var body = Level1EmailTemplate.Generate(dept, moms);
 
-                _logger.LogInformation("Sending email to {count} recipients for {dept}", recipients.Count, dept);
+                _logger.LogInformation(
+                    "Sending Level 1 email (TO: {toCount}, CC: {ccCount}) for {dept}",
+                    toRecipients.Count,
+                    ccRecipients.Count,
+                    dept);
 
-                await _emailService.SendAsync(recipients, subject, body);
+                await _emailService.SendAsync(toRecipients, ccRecipients, subject, body);
 
                 await _logRepo.InsertAsync("LEVEL1", dept, DateTime.Today, moms.Count);
 

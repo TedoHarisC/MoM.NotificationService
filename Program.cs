@@ -21,7 +21,7 @@ public class Program
                 .ForJob(level1JobKey)
                 .WithIdentity("Level1Trigger")
                 .WithCronSchedule("0 0 18 ? * MON-FRI")); // Production
-            //                                               //.WithCronSchedule("0 * * ? * *")); // Test: tiap menit
+                                                          //.WithCronSchedule("0 * * ? * *")); // Test: tiap menit
 
             var level2JobKey = new JobKey("Level2Job");
 
@@ -30,8 +30,8 @@ public class Program
             q.AddTrigger(opts => opts
                 .ForJob(level2JobKey)
                 .WithIdentity("Level2Trigger")
-                                                      .WithCronSchedule("0 0 21 ? * SUN")); // Production: tiap minggu malam (minggu)
-                                                                                            //.WithCronSchedule("0/10 * * ? * *")); // Test: tiap 10 detik
+                .WithCronSchedule("0 0 21 ? * SUN")); // Production: tiap minggu malam (minggu)
+                                                      //.WithCronSchedule("0/10 * * ? * *")); // Test: tiap 10 detik
         });
 
         builder.Services.AddQuartzHostedService(options =>

@@ -38,6 +38,28 @@ public class MoMQueryService
         return result.ToList();
     }
 
+    public async Task<List<MoMLevel2Dto>> GetOutstandingLevel2Async()
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+                    SELECT 
+                        m.MoMId,
+                        m.Topic,
+                        m.DueDate1,
+                        m.Status,
+                        vw.anonim_dept AS Dept
+                    FROM MoMs m
+                    INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+                        ON vw.nik = m.PicDept
+                    WHERE m.MoMLevel = 2
+                    AND m.Status IN ('OPEN','ON PROGRESS')
+                    AND m.IsDeleted = 0";
+
+        var result = await conn.QueryAsync<MoMLevel2Dto>(sql);
+        return result.ToList();
+    }
+
     public async Task<List<string>> GetLevel1RecipientsAsync(string dept)
     {
         using var conn = new SqlConnection(_connectionString);
@@ -51,6 +73,42 @@ public class MoMQueryService
         AND email IS NOT NULL";
 
         var result = await conn.QueryAsync<string>(sql, new { Dept = dept });
+
+        return result.ToList();
+    }
+
+    public async Task<List<string>> GetPICEmailsAsync(int momId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+                    SELECT DISTINCT vw.email
+                    FROM MoMPICEmployees pic
+                    INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+                        ON vw.id_karyawan = pic.UserId
+                    WHERE pic.MoMId = @MoMId
+                    AND pic.IsDeleted = 0
+                    AND vw.status_karyawan = 'A'
+                    AND vw.email IS NOT NULL";
+
+        var result = await conn.QueryAsync<string>(sql, new { MoMId = momId });
+        return result.ToList();
+    }
+
+    public async Task<List<string>> GetPICNamesAsync(int momId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT DISTINCT vw.nama
+        FROM MoMPICEmployees pic
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+            ON vw.nik = pic.UserId
+        WHERE pic.MoMId = @MoMId
+        AND pic.IsDeleted = 0
+        AND vw.status_karyawan = 'A'";
+
+        var result = await conn.QueryAsync<string>(sql, new { MoMId = momId });
 
         return result.ToList();
     }

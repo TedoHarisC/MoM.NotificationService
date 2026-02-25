@@ -107,8 +107,18 @@ public class Level2ReminderJob : IJob
                     continue;
                 }
 
+                // Menghitung total Outstanding on Progress dan overdue (Untuk Header Email MoM)
+                var totalOutstanding = moms.Count;
+
+                var overdueCount = moms.Count(x =>
+                    x.DueDate1.HasValue &&
+                    x.DueDate1.Value.Date < DateTime.Today);
+
+                var onProgressCount = moms.Count(x => x.Status == "ON PROGRESS");
+                var openCount = moms.Count(x => x.Status == "OPEN");
+
                 var subject = $"Reminder MoM Level 2 - Dept {dept} ({moms.Count} Outstanding)";
-                var body = Level2EmailTemplate.Generate(dept, moms);
+                var body = Level2EmailTemplate.Generate(dept, moms, totalOutstanding, overdueCount, openCount, onProgressCount);
 
                 // Untuk melihat dikirim ke siapa dan cc nya siapa
                 _logger.LogInformation("TO: {to}", string.Join(", ", toRecipients));

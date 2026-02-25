@@ -51,4 +51,17 @@ public class NotificationLogRepository
             TotalMoM = totalMom
         });
     }
+
+    public async Task<int> DeleteOlderThanAsync(int months)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        DELETE FROM MoMNotificationLogs
+        WHERE PeriodDate < DATEADD(MONTH, -@Months, GETDATE())";
+
+        var affected = await conn.ExecuteAsync(sql, new { Months = months });
+
+        return affected;
+    }
 }

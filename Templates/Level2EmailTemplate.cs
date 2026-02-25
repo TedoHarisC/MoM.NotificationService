@@ -5,7 +5,10 @@ namespace MoM.NotificationService.Templates;
 
 public static class Level2EmailTemplate
 {
-    public static string Generate(string dept, List<MoMLevel2Dto> moms)
+    public static string Generate(string dept, List<MoMLevel2Dto> moms, int totalOutstanding,
+    int overdueCount,
+    int openCount,
+    int onProgressCount)
     {
         var rows = new StringBuilder();
 
@@ -51,6 +54,41 @@ public static class Level2EmailTemplate
                                     <p style='margin:0 0 15px 0;'>
                                         Below are outstanding MoM Level 2 items that require attention before the upcoming departmental meeting.
                                     </p>
+
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:20px;'>
+                                        <tr>
+                                            <td align='center' style='padding:10px;background:#f8f9fa;border-radius:6px;'>
+                                                <table width='100%' cellpadding='0' cellspacing='0'>
+                                                    <tr>
+                                                        <td align='center' style='padding:10px;'>
+                                                            <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
+                                                                {totalOutstanding}
+                                                            </div>
+                                                            <div style='font-size:12px;color:#666;'>Total Outstanding</div>
+                                                        </td>
+                                                        <td align='center' style='padding:10px;'>
+                                                            <div style='font-size:20px;font-weight:bold;color:#d9534f;'>
+                                                                {overdueCount}
+                                                            </div>
+                                                            <div style='font-size:12px;color:#666;'>Overdue</div>
+                                                        </td>
+                                                        <td align='center' style='padding:10px;'>
+                                                            <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
+                                                                {openCount}
+                                                            </div>
+                                                            <div style='font-size:12px;color:#666;'>OPEN</div>
+                                                        </td>
+                                                        <td align='center' style='padding:10px;'>
+                                                            <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
+                                                                {onProgressCount}
+                                                            </div>
+                                                            <div style='font-size:12px;color:#666;'>ON PROGRESS</div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
 
                                     <table width='100%' cellpadding='0' cellspacing='0' 
                                            style='border-collapse:collapse;margin-top:15px;font-size:14px;'>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MoM.NotificationService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0791e7aee63b5c705f197b2d2017fd5df564ce2c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+147385bf3fb3cee2fd13ecd1db88e2d3da51b65d")]
 [assembly: System.Reflection.AssemblyProductAttribute("MoM.NotificationService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MoM.NotificationService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

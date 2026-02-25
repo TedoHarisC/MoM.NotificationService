@@ -112,6 +112,28 @@ public class MoMQueryService
 
         return result.ToList();
     }
+
+    public async Task<List<Level2PICRawDto>> GetPICsForMomsAsync(List<int> momIds)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT 
+            pic.MoMId,
+            vw.email,
+            vw.nama
+        FROM MoMPICEmployees pic
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+            ON vw.nik = pic.UserId
+        WHERE pic.MoMId IN @MoMIds
+        AND pic.IsDeleted = 0
+        AND vw.status_karyawan = 'A'
+        AND vw.email IS NOT NULL";
+
+        var result = await conn.QueryAsync<Level2PICRawDto>(sql, new { MoMIds = momIds });
+
+        return result.ToList();
+    }
 }
 
 public class MoMDto

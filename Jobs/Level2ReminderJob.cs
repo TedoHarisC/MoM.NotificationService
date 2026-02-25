@@ -67,13 +67,32 @@ public class Level2ReminderJob : IJob
                 // 5️⃣ Ambil PIC emails & names
                 var picRecipients = new List<string>();
 
-                foreach (var mom in moms)
-                {
-                    var picEmails = await _momService.GetPICEmailsAsync(mom.MoMId);
-                    picRecipients.AddRange(picEmails);
+                // VERSI LAMA (N + 1)
+                // foreach (var mom in moms)
+                // {
+                //     var picEmails = await _momService.GetPICEmailsAsync(mom.MoMId);
+                //     picRecipients.AddRange(picEmails);
 
-                    var picNames = await _momService.GetPICNamesAsync(mom.MoMId);
-                    mom.PICs = picNames;
+                //     var picNames = await _momService.GetPICNamesAsync(mom.MoMId);
+                //     mom.PICs = picNames;
+                // }
+
+                // Ambil semua momIds dalam dept
+                var momIds = moms.Select(x => x.MoMId).ToList();
+
+                // Ambil semua PIC dalam 1 query
+                var allPics = await _momService.GetPICsForMomsAsync(momIds);
+
+                // Group PIC by MoMId
+                var picGrouped = allPics.GroupBy(x => x.MoMId);
+
+                foreach (var group in picGrouped)
+                {
+                    var mom = moms.FirstOrDefault(x => x.MoMId == group.Key);
+                    if (mom == null) continue;
+
+                    mom.PICs = group.Select(x => x.nama).Distinct().ToList();
+                    picRecipients.AddRange(group.Select(x => x.email));
                 }
 
                 // 6️⃣ Gabungkan recipients

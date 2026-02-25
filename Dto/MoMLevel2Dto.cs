@@ -8,3 +8,10 @@ public class MoMLevel2Dto
 
     public List<string> PICs { get; set; } = new();
 }
+
+public class Level2PICRawDto
+{
+    public int MoMId { get; set; }
+    public string email { get; set; } = string.Empty;
+    public string nama { get; set; } = string.Empty;
+}

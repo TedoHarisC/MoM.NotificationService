@@ -5,28 +5,39 @@ using Quartz;
 
 namespace MoM.NotificationService.Jobs;
 
+[DisallowConcurrentExecution]
 public class Level1ReminderJob : IJob
 {
     private readonly NotificationLogRepository _logRepo;
     private readonly EmailService _emailService;
     private readonly ILogger<Level1ReminderJob> _logger;
     private readonly MoMQueryService _momService;
+    private readonly NotificationExecutionLogRepository _executionLogRepo;
 
     public Level1ReminderJob(
         ILogger<Level1ReminderJob> logger,
         NotificationLogRepository logRepo,
         EmailService emailService,
-        MoMQueryService momService)
+        MoMQueryService momService,
+        NotificationExecutionLogRepository executionLogRepo)
     {
         _logger = logger;
         _logRepo = logRepo;
         _emailService = emailService;
         _momService = momService;
+        _executionLogRepo = executionLogRepo;
     }
 
     public async Task Execute(IJobExecutionContext context)
     {
         _logger.LogInformation("🔥 Level 1 Reminder Job Triggered at {time}", DateTime.Now);
+
+        var startTime = DateTime.Now;
+        int executionId = await _executionLogRepo.InsertStartAsync("LEVEL1", startTime);
+
+        int totalEmailSent = 0;
+        bool isSuccess = false;
+        string? errorMessage = null;
 
         try
         {
@@ -111,14 +122,29 @@ public class Level1ReminderJob : IJob
 
                 await _emailService.SendAsync(toRecipients, ccRecipients, subject, body);
 
+                totalEmailSent += toRecipients.Count + ccRecipients.Count;
+
                 await _logRepo.InsertAsync("LEVEL1", dept, DateTime.Today, moms.Count);
 
                 _logger.LogInformation("Email sent for {dept}", dept);
             }
+
+            isSuccess = true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in Level1ReminderJob");
+            isSuccess = false;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            await _executionLogRepo.UpdateEndAsync(
+                executionId,
+                DateTime.Now,
+                isSuccess,
+                totalEmailSent,
+                errorMessage);
         }
     }
 

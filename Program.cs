@@ -20,14 +20,14 @@ public class Program
                 .Get<ScheduleSettings>();
 
             //! JOB : MOM LEVEL 1
-            // var level1JobKey = new JobKey("Level1Job");
+            var level1JobKey = new JobKey("Level1Job");
 
-            // q.AddJob<Level1ReminderJob>(opts => opts.WithIdentity(level1JobKey));
+            q.AddJob<Level1ReminderJob>(opts => opts.WithIdentity(level1JobKey));
 
-            // q.AddTrigger(opts => opts
-            //     .ForJob(level1JobKey)
-            //     .WithIdentity("Level1Trigger")
-            //     .WithCronSchedule(scheduleSettings!.Level1Cron));
+            q.AddTrigger(opts => opts
+                .ForJob(level1JobKey)
+                .WithIdentity("Level1Trigger")
+                .WithCronSchedule(scheduleSettings!.Level1Cron));
             //.WithCronSchedule("0 0 18 ? * MON-FRI"));
             //.WithCronSchedule("0 * * ? * *")); // Test: tiap menit (TRIAL)
 
@@ -39,19 +39,19 @@ public class Program
             q.AddTrigger(opts => opts
                 .ForJob(level2JobKey)
                 .WithIdentity("Level2Trigger")
-                .WithCronSchedule(scheduleSettings!.Level2Cron));
+                .WithCronSchedule(scheduleSettings!.TestCron));
             //.WithCronSchedule("0 0 21 ? * SUN"));
             //.WithCronSchedule("0/10 * * ? * *")); // Test: tiap 10 detik (TRIAL)
 
             //! JOB untuk menghapus Log yang sudah bernilai 6 bulan ke belakang lebih
-            // var cleanupJobKey = new JobKey("CleanupJob");
+            var cleanupJobKey = new JobKey("CleanupJob");
 
-            // q.AddJob<NotificationCleanupJob>(opts => opts.WithIdentity(cleanupJobKey));
+            q.AddJob<NotificationCleanupJob>(opts => opts.WithIdentity(cleanupJobKey));
 
-            // q.AddTrigger(opts => opts
-            //     .ForJob(cleanupJobKey)
-            //     .WithIdentity("CleanupTrigger")
-            //     .WithCronSchedule(scheduleSettings!.CleanupCron));
+            q.AddTrigger(opts => opts
+                .ForJob(cleanupJobKey)
+                .WithIdentity("CleanupTrigger")
+                .WithCronSchedule(scheduleSettings!.CleanupCron));
             //.WithCronSchedule("0 0 2 1 * ?")); // setiap tanggal 1 jam 02:00 (TRIAL)
 
         });
@@ -66,6 +66,7 @@ public class Program
         builder.Services.AddSingleton<MoMQueryService>();
         builder.Services.Configure<ScheduleSettings>(
         builder.Configuration.GetSection("ScheduleSettings"));
+        builder.Services.AddSingleton<NotificationExecutionLogRepository>();
 
         var host = builder.Build();
         host.Run();

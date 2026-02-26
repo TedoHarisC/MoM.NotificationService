@@ -68,6 +68,9 @@ public class Level1ReminderJob : IJob
                 // Ambil Sect Head (CC)
                 var sectHeadEmails = await _momService.GetSectHeadEmailsAsync(dept);
 
+                // CC → GM
+                var gmEmails = await _momService.GetGMEmailsAsync();
+
                 if (!deptHeadEmails.Any())
                 {
                     _logger.LogWarning("No Dept Head found for {dept}", dept);
@@ -77,12 +80,28 @@ public class Level1ReminderJob : IJob
                 var toRecipients = deptHeadEmails;
 
                 var ccRecipients = sectHeadEmails
+                    .Concat(gmEmails)
                     .Distinct()
                     .Except(toRecipients)
                     .ToList();
 
-                var subject = $"Reminder MoM Level 1 - Dept {dept} ({moms.Count} Outstanding)";
-                var body = Level1EmailTemplate.Generate(dept, moms);
+                var totalOutstanding = moms.Count;
+
+                var overdueCount = moms.Count(x =>
+                    x.DueDate1.HasValue &&
+                    x.DueDate1.Value.Date < DateTime.Today);
+
+                string severityIcon;
+
+                if (overdueCount > 0)
+                    severityIcon = "🔴";
+                else if (totalOutstanding > 0)
+                    severityIcon = "🟡";
+                else
+                    severityIcon = "🟢";
+
+                var subject = $"{severityIcon} Reminder MoM Level 1 - Dept {dept} ({moms.Count} Outstanding)";
+                var body = Level1EmailTemplate.Generate(dept, moms, totalOutstanding, overdueCount);
 
                 _logger.LogInformation(
                     "Sending Level 1 email (TO: {toCount}, CC: {ccCount}) for {dept}",
@@ -103,6 +122,7 @@ public class Level1ReminderJob : IJob
         }
     }
 
+    // PROD
     private List<string> GetDeptForToday()
     {
         // PROD

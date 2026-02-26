@@ -166,6 +166,22 @@ public class MoMQueryService
         var result = await conn.QueryAsync<string>(sql, new { Dept = dept });
         return result.ToList();
     }
+
+    public async Task<List<string>> GetGMEmailsAsync()
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT DISTINCT email
+        FROM db_site_sisfo.dbo.vw_detail_karyawan_aktif
+        WHERE anonim_jabatan = 'GM'
+        AND status_karyawan = 'A'
+        AND email IS NOT NULL";
+
+        var result = await conn.QueryAsync<string>(sql);
+
+        return result.ToList();
+    }
 }
 
 public class MoMDto

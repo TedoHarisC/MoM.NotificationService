@@ -76,13 +76,13 @@ public static class Level2EmailTemplate
                                                             <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
                                                                 {openCount}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>TERBUKA</div>
+                                                            <div style='font-size:12px;color:#666;'>OPEN</div>
                                                         </td>
                                                         <td align='center' style='padding:10px;'>
                                                             <div style='font-size:20px;font-weight:bold;color:#2c3e50;'>
                                                                 {onProgressCount}
                                                             </div>
-                                                            <div style='font-size:12px;color:#666;'>SEDANG DIKERJAKAN</div>
+                                                            <div style='font-size:12px;color:#666;'>ON PROGRESS</div>
                                                         </td>
                                                     </tr>
                                                 </table>

@@ -39,7 +39,7 @@ public class Program
             q.AddTrigger(opts => opts
                 .ForJob(level2JobKey)
                 .WithIdentity("Level2Trigger")
-                .WithCronSchedule(scheduleSettings!.TestCron));
+                .WithCronSchedule(scheduleSettings!.Level2Cron));
             //.WithCronSchedule("0 0 21 ? * SUN"));
             //.WithCronSchedule("0/10 * * ? * *")); // Test: tiap 10 detik (TRIAL)
 

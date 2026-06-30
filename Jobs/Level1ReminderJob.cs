@@ -13,19 +13,22 @@ public class Level1ReminderJob : IJob
     private readonly ILogger<Level1ReminderJob> _logger;
     private readonly MoMQueryService _momService;
     private readonly NotificationExecutionLogRepository _executionLogRepo;
+    private readonly IConfiguration _configuration;
 
     public Level1ReminderJob(
         ILogger<Level1ReminderJob> logger,
         NotificationLogRepository logRepo,
         EmailService emailService,
         MoMQueryService momService,
-        NotificationExecutionLogRepository executionLogRepo)
+        NotificationExecutionLogRepository executionLogRepo,
+        IConfiguration configuration)
     {
         _logger = logger;
         _logRepo = logRepo;
         _emailService = emailService;
         _momService = momService;
         _executionLogRepo = executionLogRepo;
+        _configuration = configuration;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -82,16 +85,21 @@ public class Level1ReminderJob : IJob
                 // CC → GM
                 var gmEmails = await _momService.GetGMEmailsAsync();
 
-                if (!deptHeadEmails.Any())
+                // Fallback ke SH jika tidak ada DH
+                var toRecipients = deptHeadEmails.Any() ? deptHeadEmails : sectHeadEmails;
+
+                if (!toRecipients.Any())
                 {
-                    _logger.LogWarning("No Dept Head found for {dept}", dept);
+                    _logger.LogWarning("No Dept Head or Sect Head found for {dept}", dept);
                     continue;
                 }
 
-                var toRecipients = deptHeadEmails;
+                var alwaysCcNiks = _configuration.GetSection("NotificationSettings:AlwaysCcNiks").Get<List<string>>() ?? new();
+                var alwaysCcEmails = await _momService.GetEmailsByNiksAsync(alwaysCcNiks);
 
                 var ccRecipients = sectHeadEmails
                     .Concat(gmEmails)
+                    .Concat(alwaysCcEmails)
                     .Distinct()
                     .Except(toRecipients)
                     .ToList();
@@ -156,8 +164,8 @@ public class Level1ReminderJob : IJob
 
         return meetingDay switch
         {
-            DayOfWeek.Monday => new() { "CPPQA" },
-            DayOfWeek.Tuesday => new() { "OPR", "EHS" },
+            DayOfWeek.Monday => new() { "CPP" },
+            DayOfWeek.Tuesday => new() { "PROD", "OPR", "EHS" },
             DayOfWeek.Wednesday => new() { "FA", "SM" },
             DayOfWeek.Thursday => new() { "ENG" },
             DayOfWeek.Friday => new() { "CSR", "HCGS" },

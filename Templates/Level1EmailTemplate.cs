@@ -22,6 +22,7 @@ public static class Level1EmailTemplate
             sb.Append($@"
             <tr style='background-color:{rowColor};'>
                 <td style='padding:8px;border:1px solid #ddd;'>{mom.Topic}</td>
+                <td style='padding:8px;border:1px solid #ddd;'>{mom.CorrectiveAction}</td>
                 <td style='padding:8px;border:1px solid #ddd;'>{mom.DueDate1:dd MMM yyyy}</td>
                 <td style='padding:8px;border:1px solid #ddd;color:{statusColor};font-weight:bold;'>
                     {mom.Status}
@@ -108,6 +109,7 @@ public static class Level1EmailTemplate
 
                                         <tr style='background-color:#2c3e50;color:#ffffff;'>
                                             <th style='padding:10px;border:1px solid #ddd;'>Topik</th>
+                                            <th style='padding:10px;border:1px solid #ddd;'>Corrective Action</th>
                                             <th style='padding:10px;border:1px solid #ddd;'>Tanggal Jatuh Tempo</th>
                                             <th style='padding:10px;border:1px solid #ddd;'>Status</th>
                                         </tr>

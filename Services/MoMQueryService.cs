@@ -18,9 +18,10 @@ public class MoMQueryService
         using var conn = new SqlConnection(_connectionString);
 
         var sql = @"
-                    SELECT 
+                    SELECT
                         m.MoMId,
                         m.Topic,
+                        m.CorrectiveAction,
                         m.DueDate1,
                         m.Status,
                         vw.anonim_dept AS PicDept
@@ -43,9 +44,10 @@ public class MoMQueryService
         using var conn = new SqlConnection(_connectionString);
 
         var sql = @"
-                    SELECT 
+                    SELECT
                         m.MoMId,
                         m.Topic,
+                        m.CorrectiveAction,
                         m.DueDate1,
                         m.Status,
                         vw.anonim_dept AS Dept
@@ -182,12 +184,31 @@ public class MoMQueryService
 
         return result.ToList();
     }
+
+    public async Task<List<string>> GetEmailsByNiksAsync(IEnumerable<string> niks)
+    {
+        var nikList = niks.ToList();
+        if (!nikList.Any()) return new List<string>();
+
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT DISTINCT email
+        FROM db_site_sisfo.dbo.vw_detail_karyawan_aktif
+        WHERE nik IN @Niks
+        AND status_karyawan = 'A'
+        AND email IS NOT NULL";
+
+        var result = await conn.QueryAsync<string>(sql, new { Niks = nikList });
+        return result.ToList();
+    }
 }
 
 public class MoMDto
 {
     public int MoMId { get; set; }
     public string Topic { get; set; } = string.Empty;
+    public string CorrectiveAction { get; set; } = string.Empty;
     public DateTime? DueDate1 { get; set; }
     public string Status { get; set; } = string.Empty;
     public string PicDept { get; set; } = string.Empty;

@@ -165,8 +165,8 @@ public class Level1ReminderJob : IJob
         return meetingDay switch
         {
             DayOfWeek.Monday => new() { "CPP" },
-            DayOfWeek.Tuesday => new() { "PROD", "OPR", "EHS" },
-            DayOfWeek.Wednesday => new() { "FA", "SM" },
+            DayOfWeek.Tuesday => new() { "FA", "SM" },
+            DayOfWeek.Wednesday => new() { "PROD", "OPR", "EHS" },
             DayOfWeek.Thursday => new() { "ENG" },
             DayOfWeek.Friday => new() { "CSR", "HCGS" },
             _ => new()

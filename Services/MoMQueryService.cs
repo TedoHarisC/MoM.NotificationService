@@ -56,7 +56,8 @@ public class MoMQueryService
                         ON vw.nik = m.PicDept
                     WHERE m.MoMLevel = 2
                     AND m.Status IN ('OPEN','ON PROGRESS')
-                    AND m.IsDeleted = 0";
+                    AND m.IsDeleted = 0
+                    AND m.IssuedDate <= DATEADD(DAY, -5, GETDATE())";
 
         var result = await conn.QueryAsync<MoMLevel2Dto>(sql);
         return result.ToList();

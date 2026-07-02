@@ -101,3 +101,9 @@
 /Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/obj/Debug/net8.0/MoM.NotificationService.pdb
 /Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/obj/Debug/net8.0/MoM.NotificationService.genruntimeconfig.cache
 /Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/obj/Debug/net8.0/ref/MoM.NotificationService.dll
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/appsettings.Development.json
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/appsettings.Development.template.json
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/appsettings.json
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/appsettings.template.json
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/MoM.NotificationService.deps.json
+/Users/itsiteabb/Projects/ASP.NET Core/MoM.NotificationService/bin/Debug/net8.0/publish/MoM.NotificationService.runtimeconfig.json

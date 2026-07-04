@@ -1,3 +1,5 @@
+namespace MoM.NotificationService.Dto;
+
 public class MoMLevel2Dto
 {
     public int MoMId { get; set; }
@@ -9,6 +11,7 @@ public class MoMLevel2Dto
     public string LatestProgress { get; set; } = "-";
 
     public List<string> PICs { get; set; } = new();
+    public List<MoMAttachmentDto> Attachments { get; set; } = new();
 }
 
 public class Level2PICRawDto
@@ -16,4 +19,13 @@ public class Level2PICRawDto
     public int MoMId { get; set; }
     public string email { get; set; } = string.Empty;
     public string nama { get; set; } = string.Empty;
+}
+
+public class AttachmentRawDto
+{
+    public int AttachmentId { get; set; }
+    public int MoMId { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
+    public string FileType { get; set; } = string.Empty;
 }

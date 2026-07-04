@@ -1,5 +1,6 @@
 using System.Text;
 using MoM.NotificationService.Services;
+using MoM.NotificationService.Dto;
 
 namespace MoM.NotificationService.Templates;
 
@@ -116,6 +117,8 @@ public static class Level2EmailTemplate
                                         Mohon dipastikan pembaruan progres diselesaikan sebelum meeting.
                                     </p>
 
+                                    {GenerateAttachmentsSection(moms)}
+
                                     <hr style='margin-top:30px;border:none;border-top:1px solid #eee;' />
 
                                     <p style='font-size:12px;color:#888;margin-top:10px;'>
@@ -132,5 +135,88 @@ public static class Level2EmailTemplate
             </table>
         </body>
         </html>";
+    }
+
+    private static string GenerateAttachmentsSection(List<MoMLevel2Dto> moms)
+    {
+        var allAttachments = moms.SelectMany(m => m.Attachments
+            .Select(a => new { MoM = m, Attachment = a }))
+            .ToList();
+
+        if (!allAttachments.Any())
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        sb.Append(@"
+                                    <hr style='margin-top:25px;margin-bottom:20px;border:none;border-top:1px solid #ddd;' />
+                                    <h3 style='color:#2c3e50;margin-bottom:15px;font-size:16px;'>
+                                        📎 Lampiran Dokumen
+                                    </h3>");
+
+        foreach (var group in moms.Where(m => m.Attachments.Any()))
+        {
+            sb.Append($@"
+                                    <div style='margin-bottom:20px;padding:15px;background:#f8f9fa;border-radius:6px;'>
+                                        <div style='font-weight:bold;color:#2c3e50;margin-bottom:12px;font-size:14px;'>
+                                            {group.Topic}
+                                        </div>
+                                        <div style='display:table;width:100%;'>");
+
+            var attachmentIndex = 0;
+            foreach (var att in group.Attachments)
+            {
+                if (attachmentIndex % 3 == 0 && attachmentIndex > 0)
+                {
+                    sb.Append(@"</div><div style='display:table;width:100%;margin-top:10px;'>");
+                }
+
+                if (att.IsImage)
+                {
+                    sb.Append($@"
+                                            <div style='display:table-cell;width:33%;padding:5px;text-align:center;vertical-align:top;'>
+                                                <div style='margin-bottom:6px;'>
+                                                    <span style='color:#666;font-size:12px;'>🖼️ {att.FileName}</span>
+                                                </div>
+                                                <a href='{att.FullUrl}' target='_blank' style='text-decoration:none;'>
+                                                    <img src='{att.FullUrl}'
+                                                         alt='{att.FileName}'
+                                                         style='width:200px;height:140px;border:1px solid #ddd;border-radius:4px;object-fit:cover;' />
+                                                </a>
+                                                <a href='{att.FullUrl}' target='_blank'
+                                                   style='display:inline-block;margin-top:6px;padding:5px 10px;background:#007bff;color:#fff;text-decoration:none;border-radius:3px;font-size:11px;'>
+                                                    📥 Download
+                                                </a>
+                                            </div>");
+                }
+                else
+                {
+                    var icon = att.FileType.ToLower() == "pdf" ? "📄" : "📎";
+                    sb.Append($@"
+                                            <div style='display:table-cell;width:33%;padding:5px;text-align:center;vertical-align:top;'>
+                                                <div style='margin-bottom:6px;'>
+                                                    <span style='color:#666;font-size:12px;'>{icon} {att.FileName}</span>
+                                                </div>
+                                                <div style='width:200px;height:140px;border:1px solid #ddd;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;background:#fff;'>
+                                                    <div style='text-align:center;'>
+                                                        <div style='font-size:36px;margin-bottom:6px;'>{icon}</div>
+                                                        <div style='font-size:10px;color:#666;'>Document</div>
+                                                    </div>
+                                                </div>
+                                                <a href='{att.FullUrl}' target='_blank'
+                                                   style='display:inline-block;margin-top:6px;padding:5px 10px;background:#28a745;color:#fff;text-decoration:none;border-radius:3px;font-size:11px;'>
+                                                    📥 Download
+                                                </a>
+                                            </div>");
+                }
+
+                attachmentIndex++;
+            }
+
+            sb.Append(@"
+                                        </div>
+                                    </div>");
+        }
+
+        return sb.ToString();
     }
 }

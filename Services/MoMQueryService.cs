@@ -1,5 +1,6 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
+using MoM.NotificationService.Dto;
 
 namespace MoM.NotificationService.Services;
 
@@ -41,8 +42,28 @@ public class MoMQueryService
                     ORDER BY m.DueDate1 ASC";
 
         var result = await conn.QueryAsync<MoMDto>(sql, new { Dept = dept });
+        var moms = result.ToList();
 
-        return result.ToList();
+        if (moms.Any())
+        {
+            var momIds = moms.Select(x => x.MoMId).ToList();
+            var attachments = await GetAttachmentsForMomsAsync(momIds);
+
+            foreach (var mom in moms)
+            {
+                mom.Attachments = attachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
+                    }).ToList();
+            }
+        }
+
+        return moms;
     }
 
     public async Task<List<MoMLevel2Dto>> GetOutstandingLevel2Async()
@@ -72,7 +93,28 @@ public class MoMQueryService
                     AND m.IssuedDate <= DATEADD(DAY, -5, GETDATE())";
 
         var result = await conn.QueryAsync<MoMLevel2Dto>(sql);
-        return result.ToList();
+        var moms = result.ToList();
+
+        if (moms.Any())
+        {
+            var momIds = moms.Select(x => x.MoMId).ToList();
+            var attachments = await GetAttachmentsForMomsAsync(momIds);
+
+            foreach (var mom in moms)
+            {
+                mom.Attachments = attachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
+                    }).ToList();
+            }
+        }
+
+        return moms;
     }
 
     public async Task<List<string>> GetLevel1RecipientsAsync(string dept)
@@ -133,7 +175,7 @@ public class MoMQueryService
         using var conn = new SqlConnection(_connectionString);
 
         var sql = @"
-        SELECT 
+        SELECT
             pic.MoMId,
             vw.email,
             vw.nama
@@ -146,6 +188,27 @@ public class MoMQueryService
         AND vw.email IS NOT NULL";
 
         var result = await conn.QueryAsync<Level2PICRawDto>(sql, new { MoMIds = momIds });
+
+        return result.ToList();
+    }
+
+    public async Task<List<AttachmentRawDto>> GetAttachmentsForMomsAsync(List<int> momIds)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT
+            AttachmentId,
+            MoMId,
+            FileName,
+            FilePath,
+            FileType
+        FROM MoMAttachments
+        WHERE MoMId IN @MoMIds
+        AND IsDeleted = 0
+        ORDER BY UploadedDate ASC";
+
+        var result = await conn.QueryAsync<AttachmentRawDto>(sql, new { MoMIds = momIds });
 
         return result.ToList();
     }
@@ -226,4 +289,5 @@ public class MoMDto
     public string Status { get; set; } = string.Empty;
     public string PicDept { get; set; } = string.Empty;
     public string LatestProgress { get; set; } = "-";
+    public List<MoMAttachmentDto> Attachments { get; set; } = new();
 }

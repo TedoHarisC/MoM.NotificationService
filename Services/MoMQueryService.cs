@@ -24,7 +24,13 @@ public class MoMQueryService
                         m.CorrectiveAction,
                         m.DueDate1,
                         m.Status,
-                        vw.anonim_dept AS PicDept
+                        vw.anonim_dept AS PicDept,
+                        ISNULL((
+                            SELECT TOP 1 Progress
+                            FROM MoMProgress
+                            WHERE MoMId = m.MoMId
+                            ORDER BY CreatedDate DESC
+                        ), '-') AS LatestProgress
                     FROM MoMs m
                     INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
                         ON vw.nik = m.PicDept
@@ -50,7 +56,13 @@ public class MoMQueryService
                         m.CorrectiveAction,
                         m.DueDate1,
                         m.Status,
-                        vw.anonim_dept AS Dept
+                        vw.anonim_dept AS Dept,
+                        ISNULL((
+                            SELECT TOP 1 Progress
+                            FROM MoMProgress
+                            WHERE MoMId = m.MoMId
+                            ORDER BY CreatedDate DESC
+                        ), '-') AS LatestProgress
                     FROM MoMs m
                     INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
                         ON vw.nik = m.PicDept
@@ -213,4 +225,5 @@ public class MoMDto
     public DateTime? DueDate1 { get; set; }
     public string Status { get; set; } = string.Empty;
     public string PicDept { get; set; } = string.Empty;
+    public string LatestProgress { get; set; } = "-";
 }

@@ -131,6 +131,23 @@ public static class Level1EmailTemplate
 
                                     {GenerateAttachmentsSection(moms)}
 
+                                    <hr style='margin-top:30px;border:none;border-top:1px solid #ddd;' />
+
+                                    <div style='padding:15px;background:#e8f4f8;border-left:4px solid #2196F3;border-radius:4px;margin-top:20px;'>
+                                        <h4 style='color:#2c3e50;margin:0 0 10px 0;font-size:14px;'>
+                                            📋 Cara Follow Up MoM
+                                        </h4>
+                                        <ol style='margin:0;padding-left:20px;font-size:13px;color:#555;line-height:1.6;'>
+                                            <li>Login ke <strong>Sisfo</strong> di <a href='http://10.2.182.50' target='_blank' style='color:#2196F3;text-decoration:none;'>10.2.182.50</a></li>
+                                            <li>Pilih menu <strong>Vortex</strong></li>
+                                            <li>Pilih menu <strong>MoM</strong> → <strong>Level 1</strong></li>
+                                            <li>Isikan <strong>Progress</strong> terkini dan upload <strong>Attachment</strong> jika diperlukan</li>
+                                        </ol>
+                                        <p style='margin:10px 0 0 0;font-size:12px;color:#666;'>
+                                            💡 <em>Progress yang diupdate akan muncul di email reminder berikutnya</em>
+                                        </p>
+                                    </div>
+
                                     <hr style='margin-top:30px;border:none;border-top:1px solid #eee;' />
 
                                     <p style='font-size:12px;color:#888;margin-top:10px;'>

@@ -11,6 +11,6 @@ public class MoMAttachmentDto
                            FileType.ToLower() is "png" or "jpg" or "jpeg" or "gif";
 
     public string FullUrl => !string.IsNullOrEmpty(FilePath)
-                             ? $"http://10.2.182.24{FilePath}"
+                             ? $"http://10.2.182.50{FilePath}"
                              : string.Empty;
 }

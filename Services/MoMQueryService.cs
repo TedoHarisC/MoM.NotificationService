@@ -27,7 +27,7 @@ public class MoMQueryService
                         m.Status,
                         vw.anonim_dept AS PicDept,
                         ISNULL((
-                            SELECT TOP 1 Progress
+                            SELECT TOP 1 ProgressNote
                             FROM MoMProgress
                             WHERE MoMId = m.MoMId
                             ORDER BY CreatedDate DESC
@@ -79,7 +79,7 @@ public class MoMQueryService
                         m.Status,
                         vw.anonim_dept AS Dept,
                         ISNULL((
-                            SELECT TOP 1 Progress
+                            SELECT TOP 1 ProgressNote
                             FROM MoMProgress
                             WHERE MoMId = m.MoMId
                             ORDER BY CreatedDate DESC

@@ -110,6 +110,114 @@ public class MoMQueryService
                         FileName = a.FileName,
                         FilePath = a.FilePath,
                         FileType = a.FileType
+                    })
+                    .ToList();
+            }
+        }
+
+        return moms;
+    }
+
+    public async Task<List<MoMLevel2Dto>> GetOutstandingLevel2DailyAsync()
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+                    SELECT
+                        m.MoMId,
+                        m.Topic,
+                        m.CorrectiveAction,
+                        m.DueDate1,
+                        m.Status,
+                        m.ForumId,
+                        vw.anonim_dept AS Dept,
+                        ISNULL((
+                            SELECT TOP 1 ProgressNote
+                            FROM MoMProgress
+                            WHERE MoMId = m.MoMId
+                            ORDER BY CreatedDate DESC
+                        ), '-') AS LatestProgress
+                    FROM MoMs m
+                    INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+                        ON vw.nik = m.PicDept
+                    WHERE m.MoMLevel = 2
+                    AND m.ForumId = 2
+                    AND m.Status IN ('OPEN','ON PROGRESS')
+                    AND m.IsDeleted = 0
+                    AND DATEDIFF(DAY, m.IssuedDate, GETDATE()) % 3 = 0";
+
+        var result = await conn.QueryAsync<MoMLevel2Dto>(sql);
+        var moms = result.ToList();
+
+        if (moms.Any())
+        {
+            var momIds = moms.Select(x => x.MoMId).ToList();
+            var attachments = await GetAttachmentsForMomsAsync(momIds);
+
+            foreach (var mom in moms)
+            {
+                mom.Attachments = attachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
+                    })
+                    .ToList();
+            }
+        }
+
+        return moms;
+    }
+
+    public async Task<List<MoMLevel2Dto>> GetOutstandingLevel2WeeklyAsync()
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+                    SELECT
+                        m.MoMId,
+                        m.Topic,
+                        m.CorrectiveAction,
+                        m.DueDate1,
+                        m.Status,
+                        m.ForumId,
+                        vw.anonim_dept AS Dept,
+                        ISNULL((
+                            SELECT TOP 1 ProgressNote
+                            FROM MoMProgress
+                            WHERE MoMId = m.MoMId
+                            ORDER BY CreatedDate DESC
+                        ), '-') AS LatestProgress
+                    FROM MoMs m
+                    INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+                        ON vw.nik = m.PicDept
+                    WHERE m.MoMLevel = 2
+                    AND m.ForumId = 3
+                    AND m.Status IN ('OPEN','ON PROGRESS')
+                    AND m.IsDeleted = 0
+                    AND m.IssuedDate <= DATEADD(DAY, -5, GETDATE())";
+
+        var result = await conn.QueryAsync<MoMLevel2Dto>(sql);
+        var moms = result.ToList();
+
+        if (moms.Any())
+        {
+            var momIds = moms.Select(x => x.MoMId).ToList();
+            var attachments = await GetAttachmentsForMomsAsync(momIds);
+
+            foreach (var mom in moms)
+            {
+                mom.Attachments = attachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
                     }).ToList();
             }
         }
@@ -276,6 +384,26 @@ public class MoMQueryService
         AND email IS NOT NULL";
 
         var result = await conn.QueryAsync<string>(sql, new { Niks = nikList });
+        return result.ToList();
+    }
+
+    public async Task<List<string>> GetAdditionalPICDeptEmailsAsync(List<int> momIds)
+    {
+        if (!momIds.Any()) return new List<string>();
+
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT DISTINCT vw.email
+        FROM MoMAdditionalPICDept apd
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vw
+            ON vw.nik = apd.DeptHeadNik
+        WHERE apd.MoMId IN @MoMIds
+        AND apd.IsDeleted = 0
+        AND vw.status_karyawan = 'A'
+        AND vw.email IS NOT NULL";
+
+        var result = await conn.QueryAsync<string>(sql, new { MoMIds = momIds });
         return result.ToList();
     }
 }

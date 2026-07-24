@@ -8,6 +8,7 @@ public class MoMLevel2Dto
     public DateTime? DueDate1 { get; set; }
     public string Status { get; set; } = string.Empty;
     public string Dept { get; set; } = string.Empty;
+    public int ForumId { get; set; }
     public string LatestProgress { get; set; } = "-";
 
     public List<string> PICs { get; set; } = new();

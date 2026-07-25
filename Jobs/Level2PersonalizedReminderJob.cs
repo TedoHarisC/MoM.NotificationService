@@ -110,6 +110,22 @@ public class Level2PersonalizedReminderJob : IJob
                 LatestProgress = x.LatestProgress
             }).ToList();
 
+            // Load attachments per MoM
+            var picMomIds = moms.Select(x => x.MoMId).ToList();
+            var picAttachments = await _momService.GetAttachmentsForMomsAsync(picMomIds);
+            foreach (var mom in moms)
+            {
+                mom.Attachments = picAttachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
+                    }).ToList();
+            }
+
             var totalOutstanding = moms.Count;
             var overdueCount = moms.Count(x => x.DueDate1.HasValue && x.DueDate1.Value.Date < DateTime.Today);
             var openCount = moms.Count(x => x.Status == "OPEN");
@@ -117,7 +133,14 @@ public class Level2PersonalizedReminderJob : IJob
             string severityIcon = overdueCount > 0 ? "🔴" : openCount > 0 ? "🟡" : "🟢";
 
             var subject = $"{severityIcon} Reminder MoM Level 2 ({typeLabel}) - {momsToSend.First().NamaPIC} ({totalOutstanding} Item)";
-            var body = Level2EmailTemplate.Generate(moms[0].Dept, moms, totalOutstanding, overdueCount, openCount, onProgressCount);
+            var body = Level2PersonalizedEmailTemplate.Generate(
+                momsToSend.First().NamaPIC,
+                typeLabel,
+                moms,
+                totalOutstanding,
+                overdueCount,
+                openCount,
+                onProgressCount);
 
             var toRecipients = new List<string> { recipientEmail };
             var ccRecipients = alwaysCcEmails.Except(toRecipients).Distinct().ToList();
@@ -168,6 +191,29 @@ public class Level2PersonalizedReminderJob : IJob
                 LatestProgress = x.LatestProgress
             }).ToList();
 
+            // Load attachments dan PIC names per MoM
+            var dhMomIds = moms.Select(x => x.MoMId).ToList();
+            var dhAttachments = await _momService.GetAttachmentsForMomsAsync(dhMomIds);
+            var dhAllPics = await _momService.GetPICsForMomsAsync(dhMomIds);
+            var dhPicGrouped = dhAllPics.GroupBy(x => x.MoMId);
+
+            foreach (var mom in moms)
+            {
+                mom.Attachments = dhAttachments
+                    .Where(a => a.MoMId == mom.MoMId && !string.IsNullOrEmpty(a.FilePath))
+                    .Select(a => new MoMAttachmentDto
+                    {
+                        AttachmentId = a.AttachmentId,
+                        FileName = a.FileName,
+                        FilePath = a.FilePath,
+                        FileType = a.FileType
+                    }).ToList();
+
+                var picGroup = dhPicGrouped.FirstOrDefault(g => g.Key == mom.MoMId);
+                if (picGroup != null)
+                    mom.PICs = picGroup.Select(x => x.nama).Distinct().ToList();
+            }
+
             var totalOutstanding = moms.Count;
             var overdueCount = moms.Count(x => x.DueDate1.HasValue && x.DueDate1.Value.Date < DateTime.Today);
             var openCount = moms.Count(x => x.Status == "OPEN");
@@ -175,7 +221,14 @@ public class Level2PersonalizedReminderJob : IJob
             string severityIcon = overdueCount > 0 ? "🔴" : openCount > 0 ? "🟡" : "🟢";
 
             var subject = $"{severityIcon} Reminder MoM Level 2 ({typeLabel}) - {dhInfo.NamaDH} ({totalOutstanding} Item)";
-            var body = Level2EmailTemplate.Generate(dhInfo.Dept, moms, totalOutstanding, overdueCount, openCount, onProgressCount);
+            var body = Level2PersonalizedEmailTemplate.Generate(
+                dhInfo.NamaDH,
+                typeLabel,
+                moms,
+                totalOutstanding,
+                overdueCount,
+                openCount,
+                onProgressCount);
 
             var toRecipients = new List<string> { recipientEmail };
             var sectHeadEmails = await _momService.GetSectHeadEmailsByDeptAsync(dhInfo.Dept);

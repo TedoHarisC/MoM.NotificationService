@@ -406,6 +406,179 @@ public class MoMQueryService
         var result = await conn.QueryAsync<string>(sql, new { MoMIds = momIds });
         return result.ToList();
     }
+
+    // Ambil semua PIC (karyawan biasa) beserta email dan MoM yang mereka terlibat
+    // untuk Daily (ForumId=2, DATEDIFF%3=0) atau Weekly (ForumId=3, IssuedDate<=5 hari)
+    public async Task<List<PersonalizedPICRawDto>> GetPersonalizedPICDataAsync(bool isDaily)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var filterSql = isDaily
+            ? "AND m.ForumId = 2 AND DATEDIFF(DAY, m.IssuedDate, GETDATE()) % 3 = 0"
+            : "AND m.ForumId = 3 AND m.IssuedDate <= DATEADD(DAY, -5, GETDATE())";
+
+        var sql = $@"
+        SELECT
+            pic.UserId AS NikPIC,
+            vwpic.email AS EmailPIC,
+            vwpic.nama AS NamaPIC,
+            m.MoMId,
+            m.Topic,
+            m.CorrectiveAction,
+            m.DueDate1,
+            m.Status,
+            vwdept.anonim_dept AS Dept,
+            ISNULL((
+                SELECT TOP 1 ProgressNote
+                FROM MoMProgress
+                WHERE MoMId = m.MoMId
+                ORDER BY CreatedDate DESC
+            ), '-') AS LatestProgress
+        FROM MoMPICEmployees pic
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwpic
+            ON vwpic.nik = pic.UserId
+        INNER JOIN MoMs m
+            ON m.MoMId = pic.MoMId
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwdept
+            ON vwdept.nik = m.PicDept
+        WHERE m.MoMLevel = 2
+        AND m.Status IN ('OPEN','ON PROGRESS')
+        AND m.IsDeleted = 0
+        AND pic.IsDeleted = 0
+        AND vwpic.status_karyawan = 'A'
+        AND vwpic.email IS NOT NULL
+        {filterSql}
+        ORDER BY vwpic.email, m.DueDate1 ASC";
+
+        var result = await conn.QueryAsync<PersonalizedPICRawDto>(sql);
+        return result.ToList();
+    }
+
+    // Ambil semua DH (dept utama) beserta MoM yang related ke dept mereka
+    public async Task<List<PersonalizedDHRawDto>> GetPersonalizedDHDataAsync(bool isDaily)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var filterSql = isDaily
+            ? "AND m.ForumId = 2 AND DATEDIFF(DAY, m.IssuedDate, GETDATE()) % 3 = 0"
+            : "AND m.ForumId = 3 AND m.IssuedDate <= DATEADD(DAY, -5, GETDATE())";
+
+        var sql = $@"
+        SELECT
+            vwdh.email AS EmailDH,
+            vwdh.nama AS NamaDH,
+            vwdh.anonim_dept AS Dept,
+            m.MoMId,
+            m.Topic,
+            m.CorrectiveAction,
+            m.DueDate1,
+            m.Status,
+            ISNULL((
+                SELECT TOP 1 ProgressNote
+                FROM MoMProgress
+                WHERE MoMId = m.MoMId
+                ORDER BY CreatedDate DESC
+            ), '-') AS LatestProgress,
+            0 AS IsAdditional,
+            NULL AS PicDeptNama
+        FROM MoMs m
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwdept
+            ON vwdept.nik = m.PicDept
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwdh
+            ON vwdh.anonim_dept = vwdept.anonim_dept
+            AND vwdh.anonim_jabatan = 'DH'
+            AND vwdh.status_karyawan = 'A'
+            AND vwdh.email IS NOT NULL
+        WHERE m.MoMLevel = 2
+        AND m.Status IN ('OPEN','ON PROGRESS')
+        AND m.IsDeleted = 0
+        {filterSql}
+
+        UNION ALL
+
+        -- DH Additional: MoM yang mereka di-assign sebagai additional
+        SELECT
+            vwdh.email AS EmailDH,
+            vwdh.nama AS NamaDH,
+            vwdh.anonim_dept AS Dept,
+            m.MoMId,
+            m.Topic,
+            m.CorrectiveAction,
+            m.DueDate1,
+            m.Status,
+            ISNULL((
+                SELECT TOP 1 ProgressNote
+                FROM MoMProgress
+                WHERE MoMId = m.MoMId
+                ORDER BY CreatedDate DESC
+            ), '-') AS LatestProgress,
+            1 AS IsAdditional,
+            vwpic.anonim_dept AS PicDeptNama
+        FROM MoMAdditionalPICDept apd
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwdh
+            ON vwdh.nik = apd.DeptHeadNik
+            AND vwdh.status_karyawan = 'A'
+            AND vwdh.email IS NOT NULL
+        INNER JOIN MoMs m
+            ON m.MoMId = apd.MoMId
+        INNER JOIN db_site_sisfo.dbo.vw_detail_karyawan_aktif vwpic
+            ON vwpic.nik = m.PicDept
+        WHERE m.MoMLevel = 2
+        AND m.Status IN ('OPEN','ON PROGRESS')
+        AND m.IsDeleted = 0
+        AND apd.IsDeleted = 0
+        {filterSql}
+        ORDER BY EmailDH, DueDate1 ASC";
+
+        var result = await conn.QueryAsync<PersonalizedDHRawDto>(sql);
+        return result.ToList();
+    }
+
+    // Ambil email SH dari dept tertentu untuk CC
+    public async Task<List<string>> GetSectHeadEmailsByDeptAsync(string dept)
+    {
+        using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+        SELECT DISTINCT email
+        FROM db_site_sisfo.dbo.vw_detail_karyawan_aktif
+        WHERE anonim_dept = @Dept
+        AND anonim_jabatan = 'SH'
+        AND status_karyawan = 'A'
+        AND email IS NOT NULL";
+
+        var result = await conn.QueryAsync<string>(sql, new { Dept = dept });
+        return result.ToList();
+    }
+}
+
+public class PersonalizedPICRawDto
+{
+    public string NikPIC { get; set; } = string.Empty;
+    public string EmailPIC { get; set; } = string.Empty;
+    public string NamaPIC { get; set; } = string.Empty;
+    public int MoMId { get; set; }
+    public string Topic { get; set; } = string.Empty;
+    public string CorrectiveAction { get; set; } = string.Empty;
+    public DateTime? DueDate1 { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string Dept { get; set; } = string.Empty;
+    public string LatestProgress { get; set; } = "-";
+}
+
+public class PersonalizedDHRawDto
+{
+    public string EmailDH { get; set; } = string.Empty;
+    public string NamaDH { get; set; } = string.Empty;
+    public string Dept { get; set; } = string.Empty;
+    public int MoMId { get; set; }
+    public string Topic { get; set; } = string.Empty;
+    public string CorrectiveAction { get; set; } = string.Empty;
+    public DateTime? DueDate1 { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string LatestProgress { get; set; } = "-";
+    public bool IsAdditional { get; set; }
+    public string? PicDeptNama { get; set; }
 }
 
 public class MoMDto

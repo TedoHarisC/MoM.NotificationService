@@ -40,6 +40,16 @@ public class Program
                 .ForJob(level2JobKey)
                 .WithIdentity("Level2Trigger")
                 .WithCronSchedule(scheduleSettings!.Level2Cron));
+
+            //! JOB : MOM LEVEL 2 PERSONALIZED
+            var level2PersonalizedJobKey = new JobKey("Level2PersonalizedJob");
+
+            q.AddJob<Level2PersonalizedReminderJob>(opts => opts.WithIdentity(level2PersonalizedJobKey));
+
+            q.AddTrigger(opts => opts
+                .ForJob(level2PersonalizedJobKey)
+                .WithIdentity("Level2PersonalizedTrigger")
+                .WithCronSchedule(scheduleSettings!.Level2PersonalizedCron));
             //.WithCronSchedule("0 0 21 ? * SUN"));
             //.WithCronSchedule("0/10 * * ? * *")); // Test: tiap 10 detik (TRIAL)
 
@@ -67,6 +77,7 @@ public class Program
         builder.Services.Configure<ScheduleSettings>(
         builder.Configuration.GetSection("ScheduleSettings"));
         builder.Services.AddSingleton<NotificationExecutionLogRepository>();
+        builder.Services.AddSingleton<PersonalizedNotificationLogRepository>();
 
         var host = builder.Build();
         host.Run();

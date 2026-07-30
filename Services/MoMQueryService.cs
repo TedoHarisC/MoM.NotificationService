@@ -24,7 +24,11 @@ public class MoMQueryService
                         m.Topic,
                         m.CorrectiveAction,
                         m.DueDate1,
-                        m.Status,
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                            THEN 'ON PROGRESS'
+                            ELSE m.Status
+                        END AS Status,
                         vw.anonim_dept AS PicDept,
                         ISNULL((
                             SELECT TOP 1 ProgressNote
@@ -76,7 +80,11 @@ public class MoMQueryService
                         m.Topic,
                         m.CorrectiveAction,
                         m.DueDate1,
-                        m.Status,
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                            THEN 'ON PROGRESS'
+                            ELSE m.Status
+                        END AS Status,
                         vw.anonim_dept AS Dept,
                         ISNULL((
                             SELECT TOP 1 ProgressNote
@@ -128,7 +136,11 @@ public class MoMQueryService
                         m.Topic,
                         m.CorrectiveAction,
                         m.DueDate1,
-                        m.Status,
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                            THEN 'ON PROGRESS'
+                            ELSE m.Status
+                        END AS Status,
                         m.ForumId,
                         vw.anonim_dept AS Dept,
                         ISNULL((
@@ -182,7 +194,11 @@ public class MoMQueryService
                         m.Topic,
                         m.CorrectiveAction,
                         m.DueDate1,
-                        m.Status,
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                            THEN 'ON PROGRESS'
+                            ELSE m.Status
+                        END AS Status,
                         m.ForumId,
                         vw.anonim_dept AS Dept,
                         ISNULL((
@@ -426,7 +442,11 @@ public class MoMQueryService
             m.Topic,
             m.CorrectiveAction,
             m.DueDate1,
-            m.Status,
+            CASE
+                WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                THEN 'ON PROGRESS'
+                ELSE m.Status
+            END AS Status,
             vwdept.anonim_dept AS Dept,
             ISNULL((
                 SELECT TOP 1 ProgressNote
@@ -472,7 +492,11 @@ public class MoMQueryService
             m.Topic,
             m.CorrectiveAction,
             m.DueDate1,
-            m.Status,
+            CASE
+                WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                THEN 'ON PROGRESS'
+                ELSE m.Status
+            END AS Status,
             ISNULL((
                 SELECT TOP 1 ProgressNote
                 FROM MoMProgress
@@ -505,7 +529,11 @@ public class MoMQueryService
             m.Topic,
             m.CorrectiveAction,
             m.DueDate1,
-            m.Status,
+            CASE
+                WHEN EXISTS (SELECT 1 FROM MoMProgress WHERE MoMId = m.MoMId)
+                THEN 'ON PROGRESS'
+                ELSE m.Status
+            END AS Status,
             ISNULL((
                 SELECT TOP 1 ProgressNote
                 FROM MoMProgress

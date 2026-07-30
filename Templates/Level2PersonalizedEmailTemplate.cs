@@ -20,7 +20,9 @@ public static class Level2PersonalizedEmailTemplate
         {
             var isOverdue = mom.DueDate1.HasValue && mom.DueDate1.Value.Date < DateTime.Today;
             var rowColor = isOverdue ? "#ffe6e6" : "#ffffff";
-            var statusColor = mom.Status == "OPEN" ? "#d9534f" : "#f0ad4e";
+            var statusColor = mom.Status.Equals("OPEN", StringComparison.OrdinalIgnoreCase)
+                ? "#d9534f"
+                : "#f0ad4e";
 
             rows.Append($@"
             <tr style='background-color:{rowColor};'>

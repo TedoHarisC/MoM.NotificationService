@@ -479,3 +479,9 @@ secrets.json
 # Logs
 logs/
 *.log
+
+#preview 
+preview_email_dh.html
+preview_email_pic.html
+sample_email_level1_horizontal.html
+sample_email_level2_horizontal.html
